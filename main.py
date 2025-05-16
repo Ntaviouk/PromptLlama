@@ -1,16 +1,40 @@
-# This is a sample Python script.
+import os
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from fastapi import FastAPI, HTTPException
+from fastapi.requests import Request
+from fastapi.responses import JSONResponse
+from dotenv import load_dotenv
+from pathlib import Path
+
+from local_llm_prompt import ask_model
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
+
+app = FastAPI()
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+@app.get("/t2t")
+def get_t2t(request: Request, promt: str = None):
+    if not promt:
+        return HTTPException(status_code=404, detail="u need to enter promt")
+
+    headers = request.headers
+
+    try:
+        token = headers["Authorization"].replace("Bearer ", "")
+    except (KeyError, AttributeError):
+        raise HTTPException(status_code=401, detail="invalid code")
+
+    if token != os.getenv("AUTH_TOKEN"):
+        return HTTPException(status_code=401, detail="invalid token")
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+    return JSONResponse(
+        {"answer": ask_model(promt)}
+    )
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+
