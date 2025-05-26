@@ -10,12 +10,11 @@ def ask_model(prompt: str) -> str:
 
 
 def main():
-    print("enter promt: ")
-    prompt = input("> ")
+    prompt = input("enter prompt: \n> ")
     answer = ask_model(prompt)
-    print("Answer: \n")
     print(answer)
 
 
 if __name__ == "__main__":
     main()
+
